@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.qoppa.todolist.Repositories.IUserRepositorie;
 import com.qoppa.todolist.models.UserModel;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -24,10 +27,15 @@ public class UserController {
 
         if (user != null) {
 
-            return ResponseEntity.badRequest().body("Username User already exists");
+            return ResponseEntity.badRequest().body("Username already exists");
         }
-        iUserRepositorie.save(userModel);
 
+        var bcryptHashString  = BCrypt.withDefaults()
+                .hashToString(12, userModel.getPassword().toCharArray());
+
+        userModel.setPassword(bcryptHashString );
+
+        iUserRepositorie.save(userModel);
         return ResponseEntity.ok().body("Sucess");
     }
 
